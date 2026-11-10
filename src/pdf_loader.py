@@ -1,10 +1,7 @@
-import pdfplumber
-
-def load_pages(pdf_path: str) -> list[dict]:
+def load_pages(file_path: str) -> list[dict]:
     pages = []
-    with pdfplumber.open(pdf_path) as pdf:
-        for i, page in enumerate(pdf.pages, start=1):
-            text = page.extract_text()
-            if text:
-                pages.append({"text": text, "page": i})
+    with open(file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
+        if text:
+            pages.append({"text": text, "page": 1})
     return pages
