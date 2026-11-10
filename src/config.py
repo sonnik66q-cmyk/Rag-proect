@@ -3,8 +3,9 @@ import os
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+GIGACHAT_CLIENT_ID = os.getenv("GIGACHAT_CLIENT_ID")
+GIGACHAT_CLIENT_SECRET = os.getenv("GIGACHAT_CLIENT_SECRET")
+GIGACHAT_MODEL = os.getenv("GIGACHAT_MODEL", "GigaChat")
 
-if not OPENAI_API_KEY:
-    raise ValueError("OPENAI_API_KEY не найден в .env")
+if not GIGACHAT_CLIENT_ID or not GIGACHAT_CLIENT_SECRET:
+    raise ValueError("Ключи GigaChat не найдены в .env")
