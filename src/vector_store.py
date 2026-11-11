@@ -19,3 +19,15 @@ def add_chunks(chunks: list[dict], embeddings: list[list[float]]):
         embeddings=embeddings,
         metadatas=[{"page": c["page"], "source": c["source"]} for c in chunks],
     )
+
+def search(query_embedding: list[float], k: int = 3) -> list[dict]:
+    collection = get_collection()
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=k,
+        include=["documents", "metadatas"],
+    )
+    return [
+        {"text": doc, "page": m["page"], "source": m["source"]}
+        for doc, m in zip(results["documents"][0], results["metadatas"][0])
+    ]
