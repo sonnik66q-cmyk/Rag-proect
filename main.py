@@ -1,30 +1,38 @@
-import argparse
-from src.pipeline import ingest, ask, run_demo
+from src.pipeline import ask
 
 def main():
-    parser = argparse.ArgumentParser(description="RAG-система по вашему документу")
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    # Приветственное сообщение
+    print("=" * 50)
+    print("🤖 Привет! Я твой RAG-ассистент по документу.")
+    print("Задай мне вопрос, и я найду ответ в тексте.")
+    print("Чтобы выйти, напиши 'выход' или нажми Ctrl+C.")
+    print("=" * 50)
 
-    # Команда ingest (загрузка документа)
-    ingest_parser = subparsers.add_parser("ingest", help="Загрузить документ в базу")
-    ingest_parser.add_argument("file", type=str, help="Путь к файлу (например, data/article.txt)")
-
-    # Команда ask (задать вопрос)
-    ask_parser = subparsers.add_parser("ask", help="Задать вопрос по документу")
-    ask_parser.add_argument("question", type=str, help="Текст вашего вопроса")
-    ask_parser.add_argument("--k", type=int, default=3, help="Количество чанков для поиска (по умолчанию 3)")
-
-    # Команда demo (прогон тестов)
-    subparsers.add_parser("demo", help="Запустить демо-вопросы")
-
-    args = parser.parse_args()
-
-    if args.command == "ingest":
-        ingest(args.file)
-    elif args.command == "ask":
-        print(ask(args.question, k=args.k))
-    elif args.command == "demo":
-        run_demo()
+    # Бесконечный цикл для общения
+    while True:
+        try:
+            # Программа ждет, пока пользователь введет текст
+            question = input("\nЗадайте свой вопрос: ")
+            
+            # Проверка на выход
+            if question.lower().strip() in ['выход', 'exit', 'quit']:
+                print("Завершение работы. До встречи!")
+                break
+                
+            # Если пользователь нажал Enter, ничего не вводя, просто пропускаем
+            if not question.strip():
+                continue
+                
+            # Отправляем вопрос в пайплайн (поиск + GigaChat)
+            ask(question)
+            
+        except KeyboardInterrupt:
+            # Если нажать Ctrl+C, программа завершится красиво, без красных ошибок
+            print("\n\nПрограмма остановлена пользователем.")
+            break
+        except Exception as e:
+            # Если произойдет непредвиденная ошибка, она выведется на экран, и цикл продолжится
+            print(f"\n[ОШИБКА]: {e}")
 
 if __name__ == "__main__":
     main()

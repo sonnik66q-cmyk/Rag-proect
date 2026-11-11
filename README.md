@@ -23,3 +23,13 @@
 ```bash
 git clone https://github.com/sonnik66q-cmyk/Rag-proect.git
 cd Rag-proect
+
+## Использование
+
+Запустите скрипт с одной из команд:
+
+* Задать вопрос по документу:
+  `python main.py ask "Ваш вопрос"`
+
+* Запустить демонстрацию:
+  `python main.py demo`

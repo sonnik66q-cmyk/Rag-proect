@@ -1,21 +1,41 @@
+import os
+import urllib3
+from dotenv import load_dotenv
 from gigachat import GigaChat
-from src.config import GIGACHAT_CLIENT_ID, GIGACHAT_CLIENT_SECRET, GIGACHAT_MODEL
+from gigachat.models import Chat, Messages, MessagesRole
 
-def generate_answer(question: str, hits: list[dict]) -> str:
-    context = "\n\n".join(f"[стр. {h['page']}] {h['text']}" for h in hits)
-    prompt = f"""Ты отвечаешь ТОЛЬКО по предоставленному контексту.
-Если ответа в контексте нет — напиши: «В документе нет ответа».
-Не выдумывай факты. В конце укажи страницы, откуда взята информация.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+load_dotenv()
 
-Контекст:
-{context}
+def ask_gigachat(messages: list, mock_mode=False) -> str:
+    if mock_mode:
+        return "[MOCK-ОТВЕТ]: Это тестовый ответ без подключения к сети."
 
-Вопрос: {question}"""
+    key = os.getenv("GIGACHAT_CREDENTIALS") or os.getenv("GIGACHAT_CLIENT_SECRET")
+    if not key:
+        return "Ошибка: Ключ не найден в файле .env"
 
-    giga = GigaChat(
-        credentials=GIGACHAT_CLIENT_SECRET, 
-        verify_ssl_certs=False,
-        model=GIGACHAT_MODEL
-    )
-    response = giga.chat(prompt)
-    return response.choices[0].message.content
+    try:
+        # 1. Преобразуем список словарей в список объектов Messages
+        giga_messages = []
+        for msg in messages:
+            role = msg["role"]
+            if role == "system":
+                giga_messages.append(Messages(role=MessagesRole.SYSTEM, content=msg["content"]))
+            elif role == "user":
+                giga_messages.append(Messages(role=MessagesRole.USER, content=msg["content"]))
+            elif role == "assistant":
+                giga_messages.append(Messages(role=MessagesRole.ASSISTANT, content=msg["content"]))
+
+        # 2. Создаем объект Chat (обертку для запроса)
+        chat_request = Chat(messages=giga_messages)
+
+        with GigaChat(credentials=key, verify_ssl_certs=False, model="GigaChat-2") as client:
+            # 3. Отправляем объект Chat
+            response = client.chat(chat_request)
+            
+            # 4. Извлекаем текст ответа (структура ответа тоже изменилась)
+            return response.choices[0].message.content
+            
+    except Exception as e:
+        return f"Ошибка при обращении к GigaChat: {e}"
