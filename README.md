@@ -30,6 +30,3 @@ cd Rag-proect
 
 * Задать вопрос по документу:
   `python main.py ask "Ваш вопрос"`
-
-* Запустить демонстрацию:
-  `python main.py demo`
