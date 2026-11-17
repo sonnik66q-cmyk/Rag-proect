@@ -7,7 +7,9 @@ from gigachat.models import Chat, Messages, MessagesRole
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 load_dotenv()
 
-def ask_gigachat(messages: list, mock_mode=False) -> str:
+def ask_gigachat(messages: list, mock_mode=None) -> str:
+    if mock_mode is None:
+        mock_mode = os.getenv("MOCK_MODE", "0") == "1"
     if mock_mode:
         return "[MOCK-ОТВЕТ]: Это тестовый ответ без подключения к сети."
 
