@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG-Ассистент</title>
+    <style>
+        /* Это простые стили (CSS), чтобы чат выглядел опрятно */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+        .chat-container {
+            width: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+        .chat-header {
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        .user-message {
+            background: #e3f2fd;
+            align-self: flex-end;
+        }
+        .bot-message {
+            background: #f1f1f1;
+            align-self: flex-start;
+        }
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            outline: none;
+        }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">🤖 RAG-Ассистент</div>
+    
+    <!-- Сюда будут добавляться сообщения -->
+    <div class="chat-messages" id="messages">
+        <div class="message bot-message">Привет! Задай мне вопрос по документу.</div>
+    </div>
+
+    <!-- Поле ввода и кнопка -->
+    <form class="chat-input" id="chat-form">
+        <input type="text" id="user-input" placeholder="Напишите вопрос..." autocomplete="off" required>
+        <button type="submit">Отправить</button>
+    </form>
+</div>
+
+<script>
+    // Это JavaScript. Он оживляет нашу страницу.
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('user-input');
+    const messagesDiv = document.getElementById('messages');
+
+    // Когда пользователь нажимает "Отправить" или Enter
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Останавливаем перезагрузку страницы
+        
+        const question = input.value.trim();
+        if (!question) return;
+
+        // 1. Показываем сообщение пользователя
+        addMessage(question, 'user-message');
+        input.value = ''; // Очищаем поле
+
+        try {
+            // 2. Отправляем запрос на наш сервер (FastAPI)
+            // Nginx перехватит /api/ask и передаст это в контейнер backend
+            const response = await fetch('/api/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: question })
+            });
+
+            const data = await response.json();
+            
+            // 3. Показываем ответ бота
+            addMessage(data.answer, 'bot-message');
+            
+            // Если есть источники, показываем их мелким шрифтом
+            if (data.sources && data.sources.length > 0) {
+                const sourcesText = data.sources.map(s => `стр. ${s.page}`).join(', ');
+                addMessage(`📚 Источники: ${sourcesText}`, 'bot-message');
+            }
+
+        } catch (error) {
+            addMessage('❌ Ошибка: Не удалось связаться с сервером.', 'bot-message');
+        }
+    });
+
+    // Функция для добавления сообщения на экран
+    function addMessage(text, className) {
+        const msg = document.createElement('div');
+        msg.className = `message ${className}`;
+        msg.textContent = text;
+        messagesDiv.appendChild(msg);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight; // Прокрутка вниз
+    }
+</script>
+
+</body>
+</html>
