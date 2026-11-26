@@ -1,0 +1,37 @@
+services:
+  backend:
+    build: .                 # Собираем образ из Dockerfile в текущей папке
+    container_name: rag_backend
+    env_file: .env           # Берем ключи из файла .env
+    environment:
+      CHROMA_PATH: /app/chroma_db
+      LOG_FILE: /app/logs/api.log
+    volumes:
+      - chroma_data:/app/chroma_db            # Сохраняем базу векторов
+      - logs_data:/app/logs                   # Сохраняем логи
+      - hf_cache:/app/.cache/huggingface      # Кэшируем модель HuggingFace
+    networks:
+      - rag_net
+    ports:
+      - "8000:8000"          # Пробрасываем порт API (для отладки)
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend        # Собираем из frontend/Dockerfile
+    container_name: rag_frontend
+    depends_on:
+      - backend              # Запускаем после бэкенда
+    networks:
+      - rag_net
+    ports:
+      - "8123:80"            # Порт 8123 на вашем ПК -> 80 порт внутри nginx
+    restart: unless-stopped
+
+networks:
+  rag_net:
+    driver: bridge
+
+volumes:
+  chroma_data:
+  logs_data:
+  hf_cache:
