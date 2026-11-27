@@ -23,7 +23,7 @@ def get_system_prompt():
 
 # Главная функция для обработки вопроса пользователя
 # question - текст вопроса, k - количество кусков текста для поиска
-def ask(question: str, k: int = 7) -> dict:
+def ask(question: str, k: int = 15) -> dict:
     try:
         q_vec = embed([question])[0]
         hits = search(q_vec, k=k)
