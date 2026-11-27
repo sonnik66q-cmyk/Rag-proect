@@ -40,6 +40,17 @@ def health():
 def ask_endpoint(payload: Question):
     log.info("QUESTION: %s", payload.question)
     result = ask(payload.question)
-    # Обрезаем ответ для лога, чтобы не раздувать файл
     log.info("ANSWER: %s", result["answer"][:200])
+    
+    # --- НОВЫЙ КОД: Убираем дубликаты страниц ---
+    unique_sources = []
+    seen = set()
+    for src in result["sources"]:
+        # Если такой страницы еще нет в списке, добавляем
+        if src["page"] not in seen:
+            unique_sources.append(src)
+            seen.add(src["page"])
+    result["sources"] = unique_sources
+    # ---------------------------------------------
+    
     return result
