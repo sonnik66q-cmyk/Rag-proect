@@ -9,7 +9,7 @@ services:
     volumes:
       - chroma_data:/app/chroma_db            # Сохраняем базу векторов
       - logs_data:/app/logs                   # Сохраняем логи
-      - hf_cache:/app/.cache/huggingface      # Кэшируем модель HuggingFace
+      - hf_cache:/app/.cache/huggingface
     networks:
       - rag_net
     ports:
